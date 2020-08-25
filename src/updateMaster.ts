@@ -35,9 +35,11 @@ export async function mstUpdate(m : Map<string, any[]>, dir : string, region: st
         ].forEach(file => m.get(file)?.forEach(a => changed.add(+a.svtId)));
 
         // collection no
-        let CEs = [...changed].filter(a => lookup.get(a)[0] === 6).map(a => lookup.get(a)[1]);
+        let CEs = [...changed].filter(a =>
+            lookup.has(a) ? lookup.get(a)[0] === 6 : false
+        ).map(a => lookup.get(a)[1]);
         let SVs = [...changed].filter(a => 
-            lookup.get(a)[0] === 2 || lookup.get(a)[0] === 1
+            lookup.has(a) ? (lookup.get(a)[0] === 2 || lookup.get(a)[0] === 1) : false
         ).map(a => lookup.get(a)[1]);
         
         let pCE = CEs.map(a => `[${a}](https://apps.atlasacademy.io/db/#/${region}/craft-essence/${a})`);
@@ -47,19 +49,40 @@ export async function mstUpdate(m : Map<string, any[]>, dir : string, region: st
     }
 
     for (let p of payloads) {
-        if (!p.payload.length) continue;
-        let { name, payload } = p;
-        await client.send('', {
-            username: 'FGO Changelog',
-            avatarURL: 'https://apps.atlasacademy.io/db/logo192.png',
-            embeds: [
-                new MessageEmbed()
-                .setTitle(name)
-                .setDescription(payload.join(', ')),
-            ]
-        })
-        // .catch()
-        // .finally(() => client.destroy());
+        let { name, payload } = p,
+            payloadChunk: string[] = [],
+            payloadSize = 0;
+
+        const payloadLimit = 2048;
+        const sendPayload = async () => {
+            await client.send('', {
+                username: 'FGO Changelog',
+                avatarURL: 'https://apps.atlasacademy.io/db/logo192.png',
+                embeds: [
+                    new MessageEmbed()
+                        .setTitle(name)
+                        .setDescription(payloadChunk.join(', ')),
+                ]
+            });
+
+            payloadChunk = [];
+            payloadSize = 0;
+
+            await new Promise(resolve => setTimeout(resolve, 1000));
+        };
+
+        for (let line of payload) {
+            if (payloadSize + line.length + 2 > payloadLimit) {
+                await sendPayload();
+            }
+
+            payloadChunk.push(line);
+            payloadSize += line.length + 2;
+        }
+
+        if (payloadChunk.length > 0) {
+            await sendPayload();
+        }
     }
     await client.destroy()
 }

@@ -5,6 +5,7 @@ export async function prepareRepository(url : string, region : string, dir : str
     await git.clone({
         dir,
         url,
+        onAuth: () => ({ username: process.env.TOKEN, password: "" }),
         singleBranch: true,
         ref: region,
         fs: require('fs'),

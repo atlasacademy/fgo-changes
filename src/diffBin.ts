@@ -9,15 +9,21 @@ export async function diff(dir: string) {
 
     let current = git.TREE({ ref: currentSHA }),
         _parent = git.TREE({ ref: parentSHA });
-    
+
         // fileName => [currentoid, parentoid]
     let changes = new Map<string, [string, string]>();
     await git.walk({
         fs, dir, trees: [current, _parent],
         async map(filename, [current, _parent]) {
-            if (await current.type() === 'tree' || await _parent.type() === 'tree') return 1;
+            if (current === null || _parent === null)
+                return 1;
+
+            if (await current.type() === 'tree' || await _parent.type() === 'tree')
+                return 1;
+
             let o1 = await current.oid(), o2 = await _parent.oid();
             if (o1 !== o2) changes.set(filename, [o1, o2]);
+
             return 1;
         }
     })
