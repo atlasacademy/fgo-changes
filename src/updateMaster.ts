@@ -42,8 +42,12 @@ export async function mstUpdate(m : Map<string, any[]>, dir : string, region: st
             lookup.has(a) ? (lookup.get(a)[0] === 2 || lookup.get(a)[0] === 1) : false
         ).map(a => lookup.get(a)[1]);
         
-        let pCE = CEs.map(a => `[${a}](https://apps.atlasacademy.io/db/#/${region}/craft-essence/${a})`);
-        let pSV = SVs.map(a => `[${a}](https://apps.atlasacademy.io/db/#/${region}/servant/${a})`);
+        let pCE = CEs
+            .sort((a, b) => a - b)
+            .map(a => `[${a}](https://apps.atlasacademy.io/db/#/${region}/craft-essence/${a})`);
+        let pSV = SVs
+            .sort((a, b) => a - b)
+            .map(a => `[${a}](https://apps.atlasacademy.io/db/#/${region}/servant/${a})`);
         payloads.push({ name: `Craft Essence changes`, payload: pCE });
         payloads.push({ name: `Servant changes`, payload: pSV });
     }
