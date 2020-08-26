@@ -15,6 +15,11 @@ export async function mstUpdate(m : Map<string, any[]>, dir : string, region: st
         table.forEach(a => lookup.set(a.id, [a.type, a.collectionNo]));
         let changed = new Set<number>();
         [
+            `master/mstSvt.json`,
+            `master/mstSvtScript.json`,
+            `master/mstSvtScriptAdd.json`
+        ].forEach(file => m.get(file)?.forEach(a => changed.add(+a.id)));
+        [
             `master/mstSvtCard.json`,
             `master/mstSvtChange.json`,
             `master/mstSvtCommandCodeUnlock.json`,
@@ -33,6 +38,7 @@ export async function mstUpdate(m : Map<string, any[]>, dir : string, region: st
             `master/mstSvtTreasureDeviceRelease.json`,
             `master/mstSvtVoiceRelation.json`,
         ].forEach(file => m.get(file)?.forEach(a => changed.add(+a.svtId)));
+        m.get(`master/mstSvtVoiceRelation.json`)?.forEach(a => changed.add(+a.relationSvtId));
 
         // collection no
         let CEs = [...changed].filter(a =>
