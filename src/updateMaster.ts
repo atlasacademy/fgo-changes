@@ -54,8 +54,8 @@ export async function mstUpdate(m : Map<string, any[]>, dir : string, region: st
         let pSV = SVs
             .sort((a, b) => a - b)
             .map(a => `[${a}](https://apps.atlasacademy.io/db/#/${region}/servant/${a})`);
-        payloads.push({ name: `Craft Essence changes`, payload: pCE });
         payloads.push({ name: `Servant changes`, payload: pSV });
+        payloads.push({ name: `Craft Essence changes`, payload: pCE });
     }
 
     {
