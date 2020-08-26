@@ -95,6 +95,8 @@ export async function mstUpdate(m : Map<string, any[]>, dir : string, region: st
         payloads.push({ name: `Function changes`, payload });
     }
 
+    process.stdout.write(`Dispatching update notifications... `);
+
     for (let p of payloads) {
         let { name, payload } = p,
             payloadChunk: string[] = [],
@@ -131,5 +133,6 @@ export async function mstUpdate(m : Map<string, any[]>, dir : string, region: st
             await sendPayload();
         }
     }
-    await client.destroy()
+    await client.destroy();
+    console.log(`Done.`)
 }

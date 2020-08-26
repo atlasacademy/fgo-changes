@@ -6,7 +6,7 @@ export async function diff(dir: string) {
         await git.readCommit({ fs, dir, oid: currentSHA });
     console.log(`Latest commit : ${currentSHA}`);
     console.log(`Latest parent : ${parentSHA}`);
-
+    process.stdout.write(`Comparing files... `);
     let current = git.TREE({ ref: currentSHA }),
         _parent = git.TREE({ ref: parentSHA });
 
@@ -27,7 +27,7 @@ export async function diff(dir: string) {
             return 1;
         }
     })
-
+    console.log(`Done.`);
     // console.log(`Changed files : `);
     // console.log([...changes].map(([k]) => `* ${k}`).join('\n'));
     return changes;

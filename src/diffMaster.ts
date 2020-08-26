@@ -6,6 +6,7 @@ export async function diffMaster(dir : string, changes : Map<string, [string, st
     // filename => changed/added obj
     let out = new Map<string, any[]>();
     
+    console.log(`Calculating master data difference...`);
     for (let filename of [...changes.keys()]) {
         if (!filename.startsWith('master')) continue;
         let [newId, oldId] = changes.get(filename);
@@ -21,11 +22,8 @@ export async function diffMaster(dir : string, changes : Map<string, [string, st
         
         let changed = [...newSet].filter(v => !oldSet.has(v));
         out.set(filename, changed.map(s => hashes.get(s)));
+        console.log(`=> ${filename} changed (${changed.length})`)
     }
-
-    out.forEach((obj, file) => {
-        console.log(`=> ${file} changed (${obj.length})`);
-    })
 
     return out;
 }
