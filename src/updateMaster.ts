@@ -52,6 +52,49 @@ export async function mstUpdate(m : Map<string, any[]>, dir : string, region: st
         payloads.push({ name: `Servant changes`, payload: pSV });
     }
 
+    {
+        let changed = new Set<number>();
+        [`master/mstSvtSkill.json`,`master/mstSkillLv.json`]
+            .forEach(file => m.get(file)?.forEach(a => changed.add(+a.skillId)));
+        [`master/mstSkill.json`, `master/mstSkillDetail.json`]
+            .forEach(file => m.get(file)?.forEach(a => changed.add(+a.id)));
+        let payload = [...changed]
+            .sort((a, b) => a - b)
+            .map(a => `[${a}](https://apps.atlasacademy.io/db/#/${region}/skill/${a})`);
+        payloads.push({ name: `Skill changes`, payload });
+    }
+
+    {
+        let changed = new Set<number>();
+        [`master/mstTreasureDevice.json`, `master/mstTreasureDeviceDetail.json`]
+            .forEach(file => m.get(file)?.forEach(a => changed.add(+a.id)));
+        [`master/mstTreasureDeviceLv.json`]
+            .forEach(file => m.get(file)?.forEach(a => changed.add(+a.treaureDeviceId)));
+        let payload = [...changed]
+            .sort((a, b) => a - b)
+            .map(id => `[${id}](https://apps.atlasacademy.io/db/#/${region}/noble-phantasm/${id})`)
+        payloads.push({ name: `Noble Phantasm changes`, payload });
+    }
+
+    {
+        let changed = new Set<number>();
+        m.get(`master/mstBuff.json`)?.forEach(a => changed.add(+a.id));
+        let payload = [...changed]
+            .sort((a, b) => a - b)
+            .map(id => `[${id}](https://apps.atlasacademy.io/db/#/${region}/buff/${id})`)
+        payloads.push({ name: `Buff changes`, payload });
+    }
+
+    {
+        let changed = new Set<number>();
+        m.get(`master/mstFunc.json`)?.forEach(a => changed.add(+a.id));
+        m.get(`master/mstFuncGroup.json`)?.forEach(a => changed.add(+a.funcId));
+        let payload = [...changed]
+            .sort((a, b) => a - b)
+            .map(id => `[${id}](https://apps.atlasacademy.io/db/#/${region}/func/${id})`)
+        payloads.push({ name: `Function changes`, payload });
+    }
+
     for (let p of payloads) {
         let { name, payload } = p,
             payloadChunk: string[] = [],
