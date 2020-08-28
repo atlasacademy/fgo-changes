@@ -3,16 +3,24 @@ import * as fs from 'fs';
 import { join } from 'path';
 
 export async function mstUpdate(m : Map<string, any[]>, dir : string, region: string) {
-    let [token, id] = process.env.WEBHOOK.split('/').reverse()
-    let client = new WebhookClient(id, token);
-
     let payloads : { name: string, payload: string[] }[] = [];
+
+    let dump = {
+        svt: [],
+        ce: [],
+        skill: [],
+        buff: [],
+        np: [],
+        func: []
+    } as { [k: string]: any[] };
+
     {
+        console.log(`Preparing servant changes...`);
         // prebuild the obj table
-        let table : { id: number, type: number, collectionNo: number }[] = 
+        let table : { id: number, type: number, collectionNo: number, name: string }[] = 
             JSON.parse(fs.readFileSync(join(dir, `master`, 'mstSvt.json'), 'utf-8'));
-        let lookup = new Map<number, [number, number]>();
-        table.forEach(a => lookup.set(a.id, [a.type, a.collectionNo]));
+        let lookup = new Map<number, [number, number, string]>();
+        table.forEach(a => lookup.set(a.id, [a.type, a.collectionNo, a.name]));
         let changed = new Set<number>();
         [
             `master/mstSvt.json`,
@@ -56,9 +64,26 @@ export async function mstUpdate(m : Map<string, any[]>, dir : string, region: st
             .map(a => `[${a}](https://apps.atlasacademy.io/db/#/${region}/servant/${a})`);
         payloads.push({ name: `Servant changes`, payload: pSV });
         payloads.push({ name: `Craft Essence changes`, payload: pCE });
+
+        for (let svtId of [...changed]) {
+            if (!lookup.has(svtId)) continue;
+            let [type, collectionNo, name] = lookup.get(svtId);
+            switch (type) {
+                case 1:
+                case 2:
+                    dump.svt.push({ id: svtId, type, collectionNo, name });
+                    break;
+                case 6:
+                    dump.ce.push({ id: svtId, type, collectionNo, name });
+            }
+        }
     }
 
     {
+        console.log(`Preparing skill changes...`);
+        let table : { id: number, name: string }[] = 
+            JSON.parse(fs.readFileSync(join(dir, `master`, 'mstSkill.json'), 'utf-8'));
+        let lookup = new Map<number, string>(table.map(a => [a.id, a.name]));
         let changed = new Set<number>();
         [`master/mstSvtSkill.json`,`master/mstSkillLv.json`]
             .forEach(file => m.get(file)?.forEach(a => changed.add(+a.skillId)));
@@ -68,9 +93,17 @@ export async function mstUpdate(m : Map<string, any[]>, dir : string, region: st
             .sort((a, b) => a - b)
             .map(a => `[${a}](https://apps.atlasacademy.io/db/#/${region}/skill/${a})`);
         payloads.push({ name: `Skill changes`, payload });
+        [...changed].forEach(skillId => {
+            if (lookup.has(skillId))
+                dump.skill.push({ id: skillId, name: lookup.get(skillId) })
+        });
     }
 
     {
+        console.log(`Preparing Noble Phantasm changes...`);
+        let table : { id: number, name: string }[] = 
+            JSON.parse(fs.readFileSync(join(dir, `master`, 'mstTreasureDevice.json'), 'utf-8'));
+        let lookup = new Map<number, string>(table.map(a => [a.id, a.name]));
         let changed = new Set<number>();
         [`master/mstTreasureDevice.json`, `master/mstTreasureDeviceDetail.json`]
             .forEach(file => m.get(file)?.forEach(a => changed.add(+a.id)));
@@ -80,18 +113,32 @@ export async function mstUpdate(m : Map<string, any[]>, dir : string, region: st
             .sort((a, b) => a - b)
             .map(id => `[${id}](https://apps.atlasacademy.io/db/#/${region}/noble-phantasm/${id})`)
         payloads.push({ name: `Noble Phantasm changes`, payload });
+        payloads.push({ name: `Skill changes`, payload });
+        [...changed].forEach(npId => {
+            if (lookup.has(npId))
+                dump.np.push({ id: npId, name: lookup.get(npId) })
+        });
     }
 
     {
+        console.log(`Preparing buff changes...`);
+        let table : { id: number, name: string }[] = 
+            JSON.parse(fs.readFileSync(join(dir, `master`, 'mstBuff.json'), 'utf-8'));
+        let lookup = new Map<number, string>(table.map(a => [a.id, a.name]));
         let changed = new Set<number>();
         m.get(`master/mstBuff.json`)?.forEach(a => changed.add(+a.id));
         let payload = [...changed]
             .sort((a, b) => a - b)
             .map(id => `[${id}](https://apps.atlasacademy.io/db/#/${region}/buff/${id})`)
         payloads.push({ name: `Buff changes`, payload });
+        [...changed].forEach(bId => {
+            if (lookup.has(bId))
+                dump.buff.push({ id: bId, name: lookup.get(bId) })
+        });
     }
 
     {
+        console.log(`Preparing function changes...`);
         let changed = new Set<number>();
         m.get(`master/mstFunc.json`)?.forEach(a => changed.add(+a.id));
         m.get(`master/mstFuncGroup.json`)?.forEach(a => changed.add(+a.funcId));
@@ -99,10 +146,13 @@ export async function mstUpdate(m : Map<string, any[]>, dir : string, region: st
             .sort((a, b) => a - b)
             .map(id => `[${id}](https://apps.atlasacademy.io/db/#/${region}/func/${id})`)
         payloads.push({ name: `Function changes`, payload });
+        dump.func.push([...changed]);
     }
 
     process.stdout.write(`Dispatching update notifications... `);
 
+    let [token, id] = process.env.WEBHOOK.split('/').reverse()
+    let client = new WebhookClient(id, token);
     for (let p of payloads) {
         let { name, payload } = p,
             payloadChunk: string[] = [],
@@ -141,4 +191,5 @@ export async function mstUpdate(m : Map<string, any[]>, dir : string, region: st
     }
     await client.destroy();
     console.log(`Done.`)
+    return dump;
 }
