@@ -1,65 +1,57 @@
-import { WebhookClient, MessageAttachment, Client } from 'discord.js';
-import * as fs from 'fs';
-import { join } from 'path';
+import { WebhookClient } from 'discord.js';
 import p from 'papaparse';
 export async function dump(dump : { [k : string]: any[] }, dir : string, region : string) {
     let { svt, ce, skill, buff, np, func } = dump;
-
-    let sPath = join(dir, 'svt.tsv'),
-        cePath = join(dir, 'ce.tsv'),
-        skPath = join(dir, 'skill.tsv'),
-        npPath = join(dir, 'np.tsv'),
-        funcPath = join(dir, 'func.json'),
-        buffPath = join(dir, 'buff.tsv')
-
-    let [token, id] = process.env.WEBHOOK.split('/').reverse()
-    let client = new WebhookClient(id, token);
+    let files : { attachment: Buffer, name: string }[] = [];
 
     if (svt.length)
     {
         console.log(`Dumping servant changes...`);
-        fs.writeFileSync(sPath, p.unparse(svt, { delimiter: '\t' }), 'utf8');
+        files.push({ name: `svt.tsv`, attachment: Buffer.from(p.unparse(svt, { delimiter: '\t' }), 'utf-8') })
     }
 
     if (ce.length)
     {
         console.log(`Dumping CE changes...`);
-        fs.writeFileSync(cePath, p.unparse(ce, { delimiter: '\t' }), 'utf8');
+        files.push({ name: `ce.tsv`, attachment: Buffer.from(p.unparse(ce, { delimiter: '\t' }), 'utf-8') })
     }
 
     if (skill.length)
     {
         console.log(`Dumping skill changes...`);
-        fs.writeFileSync(skPath, p.unparse(skill, { delimiter: '\t' }), 'utf8');
+        files.push({ name: `skill.tsv`, attachment: Buffer.from(p.unparse(skill, { delimiter: '\t' }), 'utf-8') })
     }
 
     if (np.length)
     {
         console.log(`Dumping Noble Phantasm changes...`);
-        fs.writeFileSync(npPath, p.unparse(np, { delimiter: '\t' }), 'utf8');
+        files.push({ name: `np.tsv`, attachment: Buffer.from(p.unparse(np, { delimiter: '\t' }), 'utf-8') })
     }
 
     if (func.length)
     {
         console.log(`Dumping function changes...`);
-        fs.writeFileSync(funcPath, JSON.stringify(func), 'utf8');
+        files.push({ name: `func.json`, attachment: Buffer.from(JSON.stringify(func), 'utf-8') });
     }
 
     if (buff.length)
     {
         console.log(`Dumping buff changes...`);
-        fs.writeFileSync(buffPath, p.unparse(buff, { delimiter: '\t' }), 'utf8');
+        files.push({ name: `buff.tsv`, attachment: Buffer.from(p.unparse(buff, { delimiter: '\t' }), 'utf-8') })
     }
 
-    process.stdout.write(`Dumping all changes to ${join(dir, `dump.json`)}... `);
-    fs.writeFileSync(join(dir, `dump.json`), JSON.stringify(dump), 'utf8');
+    process.stdout.write(`Dumping all changes... `);
+    files.push({ name: `dump.json`, attachment: Buffer.from(JSON.stringify(dump), 'utf-8') });
     
     console.log(`Done.`);
     process.stdout.write(`Publishing dumps... `);
+
+    let [token, id] = process.env.WEBHOOK.split('/').reverse()
+    let client = new WebhookClient(id, token);
     await client.send('', {
         username: `FGO Changelog | ${region}`,
         avatarURL: 'https://apps.atlasacademy.io/db/logo192.png',
-        files: [sPath, cePath, skPath, npPath, funcPath, buffPath, join(dir, `dump.json`)],
+        files,
     });
     console.log('Done.');
     client.destroy();
