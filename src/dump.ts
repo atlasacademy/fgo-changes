@@ -7,41 +7,41 @@ export async function dump(dump : { [k : string]: any[] }, dir : string, region 
     if (svt.length)
     {
         console.log(`Dumping servant changes...`);
-        files.push({ name: `svt.tsv`, attachment: Buffer.from(p.unparse(svt, { delimiter: '\t' }), 'utf-8') })
+        files.push({ name: `svt.txt`, attachment: Buffer.from(p.unparse(svt, { delimiter: '\t' }), 'utf-8') })
     }
 
     if (ce.length)
     {
         console.log(`Dumping CE changes...`);
-        files.push({ name: `ce.tsv`, attachment: Buffer.from(p.unparse(ce, { delimiter: '\t' }), 'utf-8') })
+        files.push({ name: `ce.txt`, attachment: Buffer.from(p.unparse(ce, { delimiter: '\t' }), 'utf-8') })
     }
 
     if (skill.length)
     {
         console.log(`Dumping skill changes...`);
-        files.push({ name: `skill.tsv`, attachment: Buffer.from(p.unparse(skill, { delimiter: '\t' }), 'utf-8') })
+        files.push({ name: `skill.txt`, attachment: Buffer.from(p.unparse(skill, { delimiter: '\t' }), 'utf-8') })
     }
 
     if (np.length)
     {
         console.log(`Dumping Noble Phantasm changes...`);
-        files.push({ name: `np.tsv`, attachment: Buffer.from(p.unparse(np, { delimiter: '\t' }), 'utf-8') })
+        files.push({ name: `np.txt`, attachment: Buffer.from(p.unparse(np, { delimiter: '\t' }), 'utf-8') })
     }
 
     if (func.length)
     {
         console.log(`Dumping function changes...`);
-        files.push({ name: `func.json`, attachment: Buffer.from(JSON.stringify(func), 'utf-8') });
+        files.push({ name: `func.txt`, attachment: Buffer.from(p.unparse(func, { delimiter: '\t' }), 'utf-8') })
     }
 
     if (buff.length)
     {
         console.log(`Dumping buff changes...`);
-        files.push({ name: `buff.tsv`, attachment: Buffer.from(p.unparse(buff, { delimiter: '\t' }), 'utf-8') })
+        files.push({ name: `buff.txt`, attachment: Buffer.from(p.unparse(buff, { delimiter: '\t' }), 'utf-8') })
     }
 
     process.stdout.write(`Dumping all changes... `);
-    files.push({ name: `dump.json`, attachment: Buffer.from(JSON.stringify(dump), 'utf-8') });
+    files.push({ name: `dump.json`, attachment: Buffer.from(JSON.stringify(dump, null, 2), 'utf-8') });
     
     console.log(`Done.`);
     process.stdout.write(`Publishing dumps... `);

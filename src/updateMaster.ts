@@ -139,6 +139,9 @@ export async function mstUpdate(m : Map<string, any[]>, dir : string, region: st
 
     {
         console.log(`Preparing function changes...`);
+        let table : { id: number, popupText: string }[] =
+            JSON.parse(fs.readFileSync(join(dir, `master`, 'mstFunc.json'), 'utf-8'));
+        let lookup = new Map<number, string>(table.map(a => [a.id, a.popupText]));
         let changed = new Set<number>();
         m.get(`master/mstFunc.json`)?.forEach(a => changed.add(+a.id));
         m.get(`master/mstFuncGroup.json`)?.forEach(a => changed.add(+a.funcId));
@@ -146,7 +149,10 @@ export async function mstUpdate(m : Map<string, any[]>, dir : string, region: st
             .sort((a, b) => a - b)
             .map(id => `[${id}](https://apps.atlasacademy.io/db/#/${region}/func/${id})`)
         payloads.push({ name: `Function changes`, payload });
-        dump.func.push([...changed]);
+        [...changed].forEach(fId => {
+            if (lookup.has(fId))
+                dump.func.push({ id: fId, name: lookup.get(fId) })
+        });
     }
 
     process.stdout.write(`Dispatching update notifications... `);
