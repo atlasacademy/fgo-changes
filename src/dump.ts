@@ -41,18 +41,20 @@ export async function dump(dump : { [k : string]: any[] }, dir : string, region 
     }
 
     process.stdout.write(`Dumping all changes... `);
-    files.push({ name: `dump.json`, attachment: Buffer.from(JSON.stringify(dump, null, 2), 'utf-8') });
-    
-    console.log(`Done.`);
-    process.stdout.write(`Publishing dumps... `);
+    if (files.length) {
+        files.push({ name: `dump.json`, attachment: Buffer.from(JSON.stringify(dump, null, 2), 'utf-8') });
+        console.log(`Done.`);
+        process.stdout.write(`Publishing dumps... `);
 
-    let [token, id] = process.env.WEBHOOK.split('/').reverse()
-    let client = new WebhookClient(id, token);
-    await client.send('', {
-        username: `FGO Changelog | ${region}`,
-        avatarURL: 'https://apps.atlasacademy.io/db/logo192.png',
-        files,
-    });
-    console.log('Done.');
-    client.destroy();
+        let [token, id] = process.env.WEBHOOK.split('/').reverse()
+        let client = new WebhookClient(id, token);
+        await client.send('', {
+            username: `FGO Changelog | ${region}`,
+            avatarURL: 'https://apps.atlasacademy.io/db/logo192.png',
+            files,
+        });
+        console.log('Done.');
+        client.destroy();
+    }
+    else console.log(`No changes to be found.`)
 }
