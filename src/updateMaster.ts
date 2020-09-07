@@ -113,7 +113,6 @@ export async function mstUpdate(m : Map<string, any[]>, dir : string, region: st
             .sort((a, b) => a - b)
             .map(id => `[${id}](https://apps.atlasacademy.io/db/#/${region}/noble-phantasm/${id})`)
         payloads.push({ name: `Noble Phantasm changes`, payload });
-        payloads.push({ name: `Skill changes`, payload });
         [...changed].forEach(npId => {
             if (lookup.has(npId))
                 dump.np.push({ id: npId, name: lookup.get(npId) })
