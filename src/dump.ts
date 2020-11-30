@@ -1,5 +1,8 @@
 import { WebhookClient } from 'discord.js';
+import { appendFileSync } from 'fs';
 import p from 'papaparse';
+import yargs from 'yargs';
+
 export async function dump(dump : { [k : string]: any[] }, dir : string, region : string) {
     let { svt, ce, skill, buff, np, func } = dump;
     let files : { attachment: Buffer, name: string }[] = [];
@@ -57,4 +60,10 @@ export async function dump(dump : { [k : string]: any[] }, dir : string, region 
         client.destroy();
     }
     else console.log(`No changes to be found.`)
+
+    const { path } = yargs.option('path', { type: 'string' }).argv;
+    if (path) {
+        process.stdout.write(`Appending all changes to ${path}...`);
+        appendFileSync(path, Buffer.from(JSON.stringify(dump), 'utf-8') + '\n');
+    }
 }
