@@ -2,6 +2,8 @@ import { WebhookClient } from 'discord.js';
 import { appendFileSync } from 'fs';
 import p from 'papaparse';
 import yargs from 'yargs';
+import git from 'isomorphic-git';
+import * as fs from 'fs';
 
 export async function dump(dump : { [k : string]: any[] }, dir : string, region : string) {
     let { svt, ce, skill, buff, np, func } = dump;
@@ -64,6 +66,12 @@ export async function dump(dump : { [k : string]: any[] }, dir : string, region 
     const { path } = yargs.option('path', { type: 'string' }).argv;
     if (path) {
         process.stdout.write(`Appending all changes to ${path}...`);
-        appendFileSync(path, Buffer.from(JSON.stringify(dump), 'utf-8') + '\n');
+
+        let commit = await git.resolveRef({ fs, dir, ref: 'HEAD' });
+        let { commit: { committer: { timestamp } } } = await git.readCommit({ fs, dir, oid: commit });
+
+        appendFileSync(path, Buffer.from(JSON.stringify({
+            commit, timestamp, changes: dump
+        }), 'utf-8') + '\n');
     }
 }
