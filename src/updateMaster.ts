@@ -63,7 +63,7 @@ export async function mstUpdate(m : Map<string, any[]>, dir : string, region: st
                 // if CE collectionNo != 0 (normal ones)
                 if (collectionNo)
                     return `[${collectionNo}](https://apps.atlasacademy.io/db/#/${region}/craft-essence/${collectionNo})`;
-                return `[[ID : ${a}]](https://apps.atlasacademy.io/db/#/${region}/craft-essence/${a})`
+                return `[[ID : ${a}]](https://apps.atlasacademy.io/db/#/${region}/enemy/${a})`
             });
         let pSV = SVs
             .sort((a, b) => a - b)
