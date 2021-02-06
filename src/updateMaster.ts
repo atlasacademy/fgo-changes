@@ -17,7 +17,7 @@ export async function mstUpdate(m : Map<string, any[]>, dir : string, region: st
     {
         console.log(`Preparing servant changes...`);
         // prebuild the obj table
-        let table : { id: number, type: number, collectionNo: number, name: string }[] = 
+        let table : { id: number, type: number, collectionNo: number, name: string }[] =
             JSON.parse(fs.readFileSync(join(dir, `master`, 'mstSvt.json'), 'utf-8'));
         let lookup = new Map<number, [number, number, string]>();
         table.forEach(a => lookup.set(a.id, [a.type, a.collectionNo, a.name]));
@@ -51,14 +51,20 @@ export async function mstUpdate(m : Map<string, any[]>, dir : string, region: st
         // collection no
         let CEs = [...changed].filter(a =>
             lookup.has(a) ? lookup.get(a)[0] === 6 : false
-        ).map(a => lookup.get(a)[1]);
-        let SVs = [...changed].filter(a => 
+        );
+        let SVs = [...changed].filter(a =>
             lookup.has(a) ? (lookup.get(a)[0] === 2 || lookup.get(a)[0] === 1) : false
         ).map(a => lookup.get(a)[1]);
-        
+
         let pCE = CEs
             .sort((a, b) => a - b)
-            .map(a => `[${a}](https://apps.atlasacademy.io/db/#/${region}/craft-essence/${a})`);
+            .map(a => {
+                let [type, collectionNo] = lookup.get(a);
+                // if CE collectionNo != 0 (normal ones)
+                if (collectionNo)
+                    return `[${collectionNo}](https://apps.atlasacademy.io/db/#/${region}/craft-essence/${collectionNo})`;
+                return `[[ID : ${a}]](https://apps.atlasacademy.io/db/#/${region}/craft-essence/${a})`
+            });
         let pSV = SVs
             .sort((a, b) => a - b)
             .map(a => `[${a}](https://apps.atlasacademy.io/db/#/${region}/servant/${a})`);
@@ -81,7 +87,7 @@ export async function mstUpdate(m : Map<string, any[]>, dir : string, region: st
 
     {
         console.log(`Preparing skill changes...`);
-        let table : { id: number, name: string }[] = 
+        let table : { id: number, name: string }[] =
             JSON.parse(fs.readFileSync(join(dir, `master`, 'mstSkill.json'), 'utf-8'));
         let lookup = new Map<number, string>(table.map(a => [a.id, a.name]));
         let changed = new Set<number>();
@@ -101,7 +107,7 @@ export async function mstUpdate(m : Map<string, any[]>, dir : string, region: st
 
     {
         console.log(`Preparing Noble Phantasm changes...`);
-        let table : { id: number, name: string }[] = 
+        let table : { id: number, name: string }[] =
             JSON.parse(fs.readFileSync(join(dir, `master`, 'mstTreasureDevice.json'), 'utf-8'));
         let lookup = new Map<number, string>(table.map(a => [a.id, a.name]));
         let changed = new Set<number>();
@@ -121,7 +127,7 @@ export async function mstUpdate(m : Map<string, any[]>, dir : string, region: st
 
     {
         console.log(`Preparing buff changes...`);
-        let table : { id: number, name: string }[] = 
+        let table : { id: number, name: string }[] =
             JSON.parse(fs.readFileSync(join(dir, `master`, 'mstBuff.json'), 'utf-8'));
         let lookup = new Map<number, string>(table.map(a => [a.id, a.name]));
         let changed = new Set<number>();
