@@ -17,7 +17,7 @@ Promise.resolve()
     .then(() => diff(path))
     .then(diff => diffMaster(path, diff))
     .then(async c => {
-        await updateMasterMission(c, region);
+        await updateMasterMission(c, region, path);
         return mstUpdate(c, path, region);
     })
     .then(d => dump(d, path, region))
