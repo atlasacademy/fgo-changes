@@ -1,21 +1,11 @@
 import { WebhookClient, MessageEmbed } from 'discord.js';
 import { join } from 'path';
-import { CondType, Mission, ClassName } from '@atlasacademy/api-connector';
+import { CondType, Mission } from '@atlasacademy/api-connector';
 import { toTitleCase } from '@atlasacademy/api-descriptor';
+import axios from 'axios';
 
 let { DetailCondType } = Mission;
 let condTypes = Object.keys(CondType).filter(key => isNaN(+key)) as (keyof typeof CondType)[];
-
-function resolveClass(classId : number) {
-    return `${classId}`;
-    // return toTitleCase(
-    //     ClassName[
-    //         Object.keys(ClassName)
-    //             .filter(key => isNaN(+key))
-    //             .find(ClassName[key] === classId)
-    //     ]
-    // )
-}
 
 function orConcat(strings : string[]) {
     if (strings.length < 2) return strings.join('');
@@ -28,6 +18,18 @@ export async function updateMasterMission (m : Map<string, any[]>, region : stri
     let changes = m.get(`master/mstEventMission.json`)?.filter(a => a.type === 2);
 
     if (changes?.length) {
+        let items = new Map<number, string>();
+        await axios.get(`https://api.atlasacademy.io/export/${region}/nice_item.json`, { responseType: 'json' })
+            .then(res => res.data.forEach((item : any) => items.set(item.id, item.name)));
+
+        let enums : any;
+        await axios.get(`https://api.atlasacademy.io/export/JP/nice_enums.json`, { responseType: 'json' })
+            .then(res => enums = res.data);
+
+        let traits : { [k : number]: string } = {};
+        await axios.get(`https://api.atlasacademy.io/export/JP/nice_trait.json`, { responseType: 'json' })
+            .then(res => traits = res.data);
+
         let missionIds = new Set(changes.map(mission => +mission.id));
         // missionId => mission
         let missionConditions = new Map<number, any>();
@@ -67,19 +69,54 @@ export async function updateMasterMission (m : Map<string, any[]>, region : stri
                             let { addTargetIds, targetIds } = _;
                             switch (_.missionCondType) {
                                 case DetailCondType.ENEMY_INDIVIDUALITY_KILL_NUM:
-                                    return `Kill ${targetNum} ${
-                                        orConcat(targetIds.map((trait : number) => `[Trait : ${trait}]`))
+                                    // not based on servant
+                                    let excludeServants = targetIds.includes(5010);
+                                    targetIds = targetIds.filter((a : number) => a != 5010);
+                                    return `Kill ${targetNum}${
+                                        (targetIds.length ? ' ' : '')
+                                            + orConcat(targetIds.map(
+                                                (trait : number) => toTitleCase(traits[trait]) || `[Trait : ${trait}]`
+                                            ))
                                     } enem${
                                         targetNum > 1 ? 'ies' : 'y'
-                                    }`;
+                                    }${excludeServants ? ` (excluding Servants & certain bosses)` : ''}`;
                                 case DetailCondType.QUEST_CLEAR_NUM_2:
                                     return `Clear ${targetNum} quest${targetNum > 1 ? 's' : ''}`;
+                                case DetailCondType.DEFEAT_ENEMY_NOT_SERVANT_CLASS:
                                 case DetailCondType.DEFEAT_SERVANT_CLASS:
+                                    // servant trait
+                                    addTargetIds = addTargetIds.filter((a : number) => a != 1000);
                                     return `Defeat ${targetNum} ${
-                                        orConcat(targetIds.map((classId : number) => resolveClass(classId)))
-                                    } servants${addTargetIds.length ? ` with ${
+                                        orConcat(targetIds.map((classId : number) => toTitleCase(enums.SvtClass[classId])))
+                                    } ${
+                                        _.missionCondType == DetailCondType.DEFEAT_SERVANT_CLASS
+                                            ? 'servants' : ''
+                                    }${addTargetIds.length ? ` with ${
                                         orConcat(addTargetIds.map((trait : number) => `[Trait : ${trait}]`))
-                                    }` : ''}`
+                                    }` : ''}${
+                                        _.missionCondType == DetailCondType.DEFEAT_SERVANT_CLASS
+                                            ? '' : '(excluding Servants & certain bossses)'
+                                    }`
+                                case DetailCondType.FRIEND_POINT_SUMMON:
+                                    return `Perform ${targetNum} Friend Point summons`;
+                                case DetailCondType.ITEM_GET_BATTLE:
+                                    let itemTexts : string[] = [];
+                                    let normalGems = [6001, 6002, 6003, 6004, 6005, 6006, 6007];
+                                    let allGems = normalGems
+                                        .reduce((prev, curr) => prev + +!!targetIds.includes(curr), 0);
+                                    if (allGems === 7)
+                                        itemTexts.push(`Gems`)
+                                    else
+                                        itemTexts.push(
+                                            (allGems < 4 ? '' : 'Gems (except ')
+                                            + normalGems.filter(i =>
+                                                allGems < 4 ? targetIds.includes(i) : !targetIds.includes(i))
+                                                .map(_ => items.get(_))
+                                                .join(', ')
+                                            + (allGems < 4 ? '' : ')')
+                                        )
+
+                                    return `Acquire ${targetNum} ${orConcat(itemTexts)}`;
                                 default:
                                     return Object.keys(DetailCondType)
                                         .filter(key => isNaN(+key))
