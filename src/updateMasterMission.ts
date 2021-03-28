@@ -13,6 +13,12 @@ function orConcat(strings : string[]) {
     return `${strings.join(', ')} or ${last}`;
 }
 
+function andConcat(strings : string[]) {
+    if (strings.length < 2) return strings.join('');
+    let last = strings.pop();
+    return `${strings.join(', ')} and ${last}`;
+}
+
 export async function updateMasterMission (m : Map<string, any[]>, region : string, path : string) {
     // check for new master mission
     let changes = m.get(`master/mstEventMission.json`)?.filter(a => a.type === 2);
@@ -80,6 +86,16 @@ export async function updateMasterMission (m : Map<string, any[]>, region : stri
                                     } enem${
                                         targetNum > 1 ? 'ies' : 'y'
                                     }${excludeServants ? ` (excluding Servants & certain bosses)` : ''}`;
+                                case DetailCondType.DEFEAT_ENEMY_INDIVIDUALITY:
+                                    return `Kill ${targetNum}${
+                                        (targetIds.length ? ' ' : '')
+                                            + andConcat(targetIds.filter((a : number) => a != 1000).map(
+                                                (trait : number) => toTitleCase(traits[trait]) || `[Trait : ${trait}]`
+                                            ))} ${
+                                                targetIds.includes(1000)
+                                                    ? `servant${targetNum > 1 ? 's' : ''}`
+                                                    : `enem${targetNum > 1 ? 'ies' : 'y'}`
+                                            }`;
                                 case DetailCondType.QUEST_CLEAR_NUM_2:
                                     return `Clear ${targetNum} quest${targetNum > 1 ? 's' : ''}`;
                                 case DetailCondType.DEFEAT_ENEMY_NOT_SERVANT_CLASS:
@@ -123,8 +139,18 @@ export async function updateMasterMission (m : Map<string, any[]>, region : stri
                                         .find(key => DetailCondType[key as keyof typeof DetailCondType] === _.missionCondType);
                             }
                         });
-                        detail = parsedDetails.join(', ')
+                        detail = parsedDetails.join(', ');
+                        break;
                     }
+                    case 'EVENT_MISSION_CLEAR': {
+                        let { targetIds } = mstEventMissionCondition;
+                        if (changes.map(_ => +_.id).filter(_ => _ != a.id).every(missionId => targetIds.includes(missionId)))
+                            detail = `Clear all other missions`;
+                        else
+                            detail = `Clear missions with ID ${targetIds.join(', ')}`;
+                            break;
+                    }
+                    default: console.log(mstEventMissionCondition);
                 }
                 return `\`${a.id}\` | ${detail}`;
             }).join('\n');
