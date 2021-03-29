@@ -43,7 +43,7 @@ export async function updateMasterMission (m : Map<string, any[]>, region : stri
         let missionConditionDetails = new Map<number, any>();
 
         for (let condition of require(join(path, 'master', 'mstEventMissionCondition.json')))
-            if (missionIds.has(+condition.missionId))
+            if (missionIds.has(+condition.missionId) && condition.missionProgressType == 4) // CLEAR
                 missionConditions.set(+condition.missionId, condition);
 
         for (let [_, condition] of missionConditions)
