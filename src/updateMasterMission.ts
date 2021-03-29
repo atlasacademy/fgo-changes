@@ -135,6 +135,10 @@ export async function updateMasterMission (m : Map<string, any[]>, region : stri
                                         )
 
                                     return `Acquire ${targetNum} ${orConcat(itemTexts)}`;
+                                case DetailCondType.BATTLE_SVT_CLASS_IN_DECK:
+                                    return `Complete ${targetNum} quest${targetNum > 1 ? "s" : ''} with at least one ${
+                                        orConcat(targetIds.map((classId : number) => toTitleCase(enums.SvtClass[classId])))
+                                    } servant in your party`;
                                 default:
                                     return Object.keys(DetailCondType)
                                         .filter(key => isNaN(+key))
