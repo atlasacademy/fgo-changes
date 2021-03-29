@@ -58,7 +58,9 @@ export async function updateMasterMission (m : Map<string, any[]>, region : stri
         let [token, id] = process.env.WEBHOOK.split('/').reverse()
         let client = new WebhookClient(id, token);
 
-        const condDetails = changes.map(a => `- ${a.detail}`).join('\n');
+        const condDetails = Array.from(
+            missionConditions.values()
+        ).sort((a, b) => a.missionId - b.missionId).map(a => `- ${a.conditionMessage}`).join('\n');
 
         const condDescriptions = changes
             .sort((a, b) => a.id - b.id)
