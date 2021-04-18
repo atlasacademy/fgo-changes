@@ -40,7 +40,10 @@ export async function updateMasterMission (m : Map<string, any[]>, region : stri
         // missionId => mission
         let missionConditions = new Map<number, any>();
         // detailId => detail
-        let missionConditionDetails = new Map<number, any>();
+        let missionConditionDetails = new Map<
+            number,
+            { addTargetIds: number[], targetIds: number[], missionCondType: Mission.DetailCondType }
+        >();
 
         for (let condition of require(join(path, 'master', 'mstEventMissionCondition.json')))
             if (missionIds.has(+condition.missionId) && condition.missionProgressType == 4) // CLEAR
@@ -119,22 +122,47 @@ export async function updateMasterMission (m : Map<string, any[]>, region : stri
                                     return `Perform ${targetNum} Friend Point summons`;
                                 case DetailCondType.ITEM_GET_BATTLE:
                                     let itemTexts : string[] = [];
-                                    let normalGems = [6001, 6002, 6003, 6004, 6005, 6006, 6007];
-                                    let allGems = normalGems
-                                        .reduce((prev, curr) => prev + +!!targetIds.includes(curr), 0);
-                                    if (allGems === 7)
-                                        itemTexts.push(`Gems`)
-                                    else
-                                        itemTexts.push(
-                                            (allGems < 4 ? '' : 'Gems (except ')
-                                            + normalGems.filter(i =>
-                                                allGems < 4 ? targetIds.includes(i) : !targetIds.includes(i))
+                                    let records = [
+                                        {
+                                            ids: [6001, 6002, 6003, 6004, 6005, 6006, 6007],
+                                            name: 'Gem'
+                                        },
+                                        {
+                                            ids: [6101, 6102, 6103, 6104, 6105, 6106, 6107],
+                                            name: 'Magic Gem'
+                                        },
+                                        {
+                                            ids: [6201, 6202, 6203, 6204, 6205, 6206, 6207],
+                                            name: 'Secret Gem'
+                                        },
+                                        {
+                                            ids: [7001, 7002, 7003, 7004, 7005, 7006, 7007],
+                                            name: 'Piece'
+                                        },
+                                        {
+                                            ids: [7101, 7102, 7103, 7104, 7105, 7106, 7107],
+                                            name: 'Monument'
+                                        }
+                                    ];
+
+                                    for (let { ids, name } of records) {
+                                        let validGemCount = ids.reduce((prev, curr) => prev + +!!targetIds.includes(curr), 0);
+                                        let exclusive = validGemCount >= 4;
+                                        if (validGemCount === 7) itemTexts.push(name + 's');
+                                        else itemTexts.push(
+                                            (exclusive ? `${name + 's'} (except ` : '')
+                                            + ids.filter(i =>
+                                                exclusive ? !targetIds.includes(i) : targetIds.includes(i))
                                                 .map(_ => items.get(_))
                                                 .join(', ')
-                                            + (allGems < 4 ? '' : ')')
+                                            + (exclusive ? ')' : '')
                                         )
+                                    }
 
-                                    return `Acquire ${targetNum} ${orConcat(itemTexts)}`;
+                                    let filter = new Set(...records.map(_ => _.ids));
+                                    itemTexts.push(...targetIds.filter(a => !filter.has(a)).map(itemId => items.get(itemId)));
+
+                                    return `Acquire ${targetNum} ${orConcat(itemTexts)} through battles`;
                                 case DetailCondType.BATTLE_SVT_CLASS_IN_DECK:
                                     return `Complete ${targetNum} quest${targetNum > 1 ? "s" : ''} with at least one ${
                                         orConcat(targetIds.map((classId : number) => toTitleCase(enums.SvtClass[classId])))
