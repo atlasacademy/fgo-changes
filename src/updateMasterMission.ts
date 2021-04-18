@@ -167,6 +167,9 @@ export async function updateMasterMission (m : Map<string, any[]>, region : stri
                                     return `Complete ${targetNum} quest${targetNum > 1 ? "s" : ''} with at least one ${
                                         orConcat(targetIds.map((classId : number) => toTitleCase(enums.SvtClass[classId])))
                                     } servant in your party`;
+                                case DetailCondType.SVT_GET_BATTLE:
+                                    // TODO : handle other sorts of entity
+                                    return `Acquire ${targetNum} of any type of Embers`
                                 default:
                                     return Object.keys(DetailCondType)
                                         .filter(key => isNaN(+key))
