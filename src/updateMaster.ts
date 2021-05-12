@@ -67,7 +67,7 @@ export async function mstUpdate(m : Map<string, any[]>, dir : string, region: st
                 let [type, collectionNo] = lookup.get(a)
                 if (collectionNo)
                     return `[${collectionNo}](https://apps.atlasacademy.io/db/#/${region}/servant/${collectionNo})`;
-                return `[[ID : ${a}]](https://apps.atlasacademy.io/db/#/${region}/servant/${a})`
+                return `[[ID : ${a}]](https://apps.atlasacademy.io/db/#/${region}/enemy/${a})`
             });
         payloads.push({ name: `Servant changes`, payload: pSV });
         payloads.push({ name: `Craft Essence changes`, payload: pCE });
