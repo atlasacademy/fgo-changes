@@ -162,7 +162,7 @@ export async function updateMasterMission (m : Map<string, any[]>, region : stri
                                     let filter = new Set(...records.map(_ => _.ids));
                                     itemTexts.push(...targetIds.filter(a => !filter.has(a)).map(itemId => items.get(itemId)));
 
-                                    return `Acquire ${targetNum} ${orConcat(itemTexts)} through battles`;
+                                    return `Acquire ${targetNum} ${orConcat(itemTexts.filter(text => text))} through battles`;
                                 case DetailCondType.BATTLE_SVT_CLASS_IN_DECK:
                                     return `Complete ${targetNum} quest${targetNum > 1 ? "s" : ''} with at least one ${
                                         orConcat(targetIds.map((classId : number) => toTitleCase(enums.SvtClass[classId])))
