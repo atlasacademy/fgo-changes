@@ -170,6 +170,25 @@ export async function updateMasterMission (m : Map<string, any[]>, region : stri
                                 case DetailCondType.SVT_GET_BATTLE:
                                     // TODO : handle other sorts of entity
                                     return `Acquire ${targetNum} of any type of Embers`
+                                case DetailCondType.DEFEAT_ENEMY_CLASS:
+                                    let allClasses = [
+                                        1,  2,  3,  4,  5,  6,  7,
+                                        8,  9, 10, 11, 12, 17, 20,
+                                       22, 23, 24, 25, 27
+                                    ]
+                                    targetIds = targetIds.filter(id => allClasses.includes(id))
+
+                                    let except = targetIds.length > allClasses.length / 2;
+                                    let all = targetIds.length === allClasses.length;
+
+                                    let description = (except ? 'with all class except ' : 'with class ') + orConcat(
+                                        (except
+                                        ? allClasses.filter(classId => !targetIds.includes(classId))
+                                        : targetIds)
+                                            .map(classId => toTitleCase(enums.SvtClass[classId]))
+                                    );
+
+                                    return `Defeat ${targetNum} enemies ${all ? '' : description}`;
                                 default:
                                     return Object.keys(DetailCondType)
                                         .filter(key => isNaN(+key))
