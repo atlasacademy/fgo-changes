@@ -122,7 +122,7 @@ export async function updateMasterMission (m : Map<string, any[]>, region : stri
                                     return `Perform ${targetNum} Friend Point summons`;
                                 case DetailCondType.ITEM_GET_BATTLE:
                                     let itemTexts : string[] = [];
-                                    let records = [
+                                    let filteredCategories = [
                                         {
                                             ids: [6001, 6002, 6003, 6004, 6005, 6006, 6007],
                                             name: 'Gem'
@@ -145,7 +145,7 @@ export async function updateMasterMission (m : Map<string, any[]>, region : stri
                                         }
                                     ];
 
-                                    for (let { ids, name } of records) {
+                                    for (let { ids, name } of filteredCategories) {
                                         let validGemCount = ids.reduce((prev, curr) => prev + +!!targetIds.includes(curr), 0);
                                         let exclusive = validGemCount >= 4;
                                         if (validGemCount === 7) itemTexts.push(name + 's');
@@ -159,7 +159,7 @@ export async function updateMasterMission (m : Map<string, any[]>, region : stri
                                         )
                                     }
 
-                                    let filter = new Set(...records.map(_ => _.ids));
+                                    let filter = new Set(filteredCategories.map(_ => _.ids).flat());
                                     itemTexts.push(...targetIds.filter(a => !filter.has(a)).map(itemId => items.get(itemId)));
 
                                     return `Acquire ${targetNum} ${orConcat(itemTexts.filter(text => text))} through battles`;
