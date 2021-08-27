@@ -16,8 +16,9 @@ Promise.resolve()
     .then(() => prepareRepository(process.env.REPO, region, path))
     .then(() => diff(path))
     .then(diff => diffMaster(path, diff))
-    .then(async c => {
+    .then(async _ => {
+        let [c, schemaChanges] = _;
         await updateMasterMission(c, region, path);
-        return mstUpdate(c, path, region);
+        return mstUpdate(c, path, region, schemaChanges);
     })
-    .then(d => dump(d, path, region))
+    // .then(d => dump(d, path, region))

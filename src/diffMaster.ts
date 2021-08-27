@@ -5,7 +5,7 @@ import hash from 'object-hash';
 export async function diffMaster(dir : string, changes : Map<string, [string, string]>) {
     // filename => changed/added obj
     let out = new Map<string, any[]>();
-    
+    let schemaChanges = [] as string[];
     console.log(`Calculating master data difference...`);
     for (let filename of [...changes.keys()]) {
         if (!filename.startsWith('master')) continue;
@@ -19,11 +19,16 @@ export async function diffMaster(dir : string, changes : Map<string, [string, st
         let h = (_ : any) => { let __ = hash(_); hashes.set(__, _); return __ };
 
         let oldSet = new Set(_old.map(h)), newSet = new Set(_new.map(h));
-        
+
         let changed = [...newSet].filter(v => !oldSet.has(v));
-        out.set(filename, changed.map(s => hashes.get(s)));
-        console.log(`=> ${filename} changed (${changed.length})`)
+        console.log(`=> ${filename} changed (${changed.length} new) ${changed.length === _new.length ? '(schema potentially changed!)' : ''}`)
+        if (changed.length === _new.length)
+        {
+            console.log(`   This file will be ignored in the changes calculation.`);
+            schemaChanges.push(filename);
+        }
+        else out.set(filename, changed.map(s => hashes.get(s)));
     }
 
-    return out;
+    return <const>[out, schemaChanges];
 }

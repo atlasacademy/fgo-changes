@@ -2,7 +2,7 @@ import { WebhookClient, MessageEmbed } from 'discord.js';
 import * as fs from 'fs';
 import { join } from 'path';
 
-export async function mstUpdate(m : Map<string, any[]>, dir : string, region: string) {
+export async function mstUpdate(m : Map<string, any[]>, dir : string, region: string, ignoredFiles : string[] = []) {
     let payloads : { name: string, payload: string[] }[] = [];
 
     let dump = {
@@ -201,6 +201,29 @@ export async function mstUpdate(m : Map<string, any[]>, dir : string, region: st
             await sendPayload();
         }
     }
+
+    if (ignoredFiles.length)
+        await client.send('', {
+            username: `FGO Changelog | ${region}`,
+            avatarURL: 'https://apps.atlasacademy.io/db/logo192.png',
+            embeds: [
+                new MessageEmbed()
+                    .setTitle('Potential schema changes')
+                    .setDescription(
+                        'Found at least a collection which has its schema modified (the new collection is wholly overwritten with new objects).'
+                        + `\nThe changelog above will not consider ${
+                            ignoredFiles.length > 1 ? 'these' : 'this'
+                        } modified collection${ignoredFiles.length > 1 ? 's' : ''}.`
+                    )
+                    .addField(
+                        `Changed collection`+ (ignoredFiles.length > 1 ? 's' : ''),
+                        '```'
+                        + ignoredFiles.join('\n')
+                        + '```'
+                    )
+            ]
+        })
+
     await client.destroy();
     console.log(`Done.`)
     return dump;
