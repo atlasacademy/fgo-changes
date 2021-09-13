@@ -58,16 +58,16 @@ export async function mstUpdate(m : Map<string, any[]>, dir : string, region: st
                 let [type, collectionNo] = lookup.get(a);
                 // if CE collectionNo != 0 (normal ones)
                 if (collectionNo)
-                    return `[${collectionNo}](https://apps.atlasacademy.io/db/#/${region}/craft-essence/${collectionNo})`;
-                return `[[ID : ${a}]](https://apps.atlasacademy.io/db/#/${region}/enemy/${a})`
+                    return `[${collectionNo}](https://apps.atlasacademy.io/db/${region}/craft-essence/${collectionNo})`;
+                return `[[ID : ${a}]](https://apps.atlasacademy.io/db/${region}/enemy/${a})`
             });
         let pSV = SVs
             .sort((a, b) => a - b)
             .map(a => {
                 let [type, collectionNo] = lookup.get(a)
                 if (collectionNo)
-                    return `[${collectionNo}](https://apps.atlasacademy.io/db/#/${region}/servant/${collectionNo})`;
-                return `[[ID : ${a}]](https://apps.atlasacademy.io/db/#/${region}/enemy/${a})`
+                    return `[${collectionNo}](https://apps.atlasacademy.io/db/${region}/servant/${collectionNo})`;
+                return `[[ID : ${a}]](https://apps.atlasacademy.io/db/${region}/enemy/${a})`
             });
         payloads.push({ name: `Servant changes`, payload: pSV });
         payloads.push({ name: `Craft Essence changes`, payload: pCE });
@@ -98,7 +98,7 @@ export async function mstUpdate(m : Map<string, any[]>, dir : string, region: st
             .forEach(file => m.get(file)?.forEach(a => changed.add(+a.id)));
         let payload = [...changed]
             .sort((a, b) => a - b)
-            .map(a => `[${a}](https://apps.atlasacademy.io/db/#/${region}/skill/${a})`);
+            .map(a => `[${a}](https://apps.atlasacademy.io/db/${region}/skill/${a})`);
         payloads.push({ name: `Skill changes`, payload });
         [...changed].forEach(skillId => {
             if (lookup.has(skillId))
@@ -118,7 +118,7 @@ export async function mstUpdate(m : Map<string, any[]>, dir : string, region: st
             .forEach(file => m.get(file)?.forEach(a => changed.add(+a.treaureDeviceId)));
         let payload = [...changed]
             .sort((a, b) => a - b)
-            .map(id => `[${id}](https://apps.atlasacademy.io/db/#/${region}/noble-phantasm/${id})`)
+            .map(id => `[${id}](https://apps.atlasacademy.io/db/${region}/noble-phantasm/${id})`)
         payloads.push({ name: `Noble Phantasm changes`, payload });
         [...changed].forEach(npId => {
             if (lookup.has(npId))
@@ -135,7 +135,7 @@ export async function mstUpdate(m : Map<string, any[]>, dir : string, region: st
         m.get(`master/mstBuff.json`)?.forEach(a => changed.add(+a.id));
         let payload = [...changed]
             .sort((a, b) => a - b)
-            .map(id => `[${id}](https://apps.atlasacademy.io/db/#/${region}/buff/${id})`)
+            .map(id => `[${id}](https://apps.atlasacademy.io/db/${region}/buff/${id})`)
         payloads.push({ name: `Buff changes`, payload });
         [...changed].forEach(bId => {
             if (lookup.has(bId))
@@ -153,7 +153,7 @@ export async function mstUpdate(m : Map<string, any[]>, dir : string, region: st
         m.get(`master/mstFuncGroup.json`)?.forEach(a => changed.add(+a.funcId));
         let payload = [...changed]
             .sort((a, b) => a - b)
-            .map(id => `[${id}](https://apps.atlasacademy.io/db/#/${region}/func/${id})`)
+            .map(id => `[${id}](https://apps.atlasacademy.io/db/${region}/func/${id})`)
         payloads.push({ name: `Function changes`, payload });
         [...changed].forEach(fId => {
             if (lookup.has(fId))
