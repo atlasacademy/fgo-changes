@@ -25,8 +25,8 @@ export async function diffMaster(dir : string, changes : Map<string, [string, st
             (changed.length === _new.length && _new.length)  ? '(schema potentially changed!)' : ''
         }`)
         if (changed.length === _new.length) {
-            if (_new.length === 0) {
-                console.log(`   This file seems to be wiped? Let's not consider this a schema change.`);
+            if (_new.length === 0 || oldSet.size === 0) {
+                console.log(`   This file seems to be wiped/added from zero? Let's not consider this a schema change.`);
             }
             else {
                 console.log(`   This file will be ignored in the changes calculation.`);
