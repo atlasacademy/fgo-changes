@@ -21,11 +21,17 @@ export async function diffMaster(dir : string, changes : Map<string, [string, st
         let oldSet = new Set(_old.map(h)), newSet = new Set(_new.map(h));
 
         let changed = [...newSet].filter(v => !oldSet.has(v));
-        console.log(`=> ${filename} changed (${changed.length} new) ${changed.length === _new.length ? '(schema potentially changed!)' : ''}`)
-        if (changed.length === _new.length)
-        {
-            console.log(`   This file will be ignored in the changes calculation.`);
-            schemaChanges.push(filename);
+        console.log(`=> ${filename} changed (${changed.length} new) ${
+            (changed.length === _new.length && _new.length)  ? '(schema potentially changed!)' : ''
+        }`)
+        if (changed.length === _new.length) {
+            if (_new.length === 0) {
+                console.log(`   This file seems to be wiped? Let's not consider this a schema change.`);
+            }
+            else {
+                console.log(`   This file will be ignored in the changes calculation.`);
+                schemaChanges.push(filename);
+            }
         }
         else out.set(filename, changed.map(s => hashes.get(s)));
     }
