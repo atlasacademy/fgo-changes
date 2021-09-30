@@ -45,23 +45,23 @@ export async function dump(dump : { [k : string]: any[] }, dir : string, region 
         files.push({ name: `buff.txt`, attachment: Buffer.from(p.unparse(buff, { delimiter: '\t' }), 'utf-8') })
     }
 
-    process.stdout.write(`Dumping all changes... `);
-    if (files.length) {
-        files.push({ name: `dump.json`, attachment: Buffer.from(JSON.stringify(dump, null, 2), 'utf-8') });
-        console.log(`Done.`);
-        process.stdout.write(`Publishing dumps... `);
+    // process.stdout.write(`Dumping all changes... `);
+    // if (files.length) {
+    //     files.push({ name: `dump.json`, attachment: Buffer.from(JSON.stringify(dump, null, 2), 'utf-8') });
+    //     console.log(`Done.`);
+    //     process.stdout.write(`Publishing dumps... `);
 
-        let [token, id] = process.env.WEBHOOK.split('/').reverse()
-        let client = new WebhookClient(id, token);
-        await client.send('', {
-            username: `FGO Changelog | ${region}`,
-            avatarURL: 'https://apps.atlasacademy.io/db/logo192.png',
-            files,
-        });
-        console.log('Done.');
-        client.destroy();
-    }
-    else console.log(`No changes to be found.`)
+    //     let [token, id] = process.env.WEBHOOK.split('/').reverse()
+    //     let client = new WebhookClient(id, token);
+    //     await client.send('', {
+    //         username: `FGO Changelog | ${region}`,
+    //         avatarURL: 'https://apps.atlasacademy.io/db/logo192.png',
+    //         files,
+    //     });
+    //     console.log('Done.');
+    //     client.destroy();
+    // }
+    // else console.log(`No changes to be found.`)
 
     const { path } = yargs.option('path', { type: 'string' }).argv;
     if (path) {
