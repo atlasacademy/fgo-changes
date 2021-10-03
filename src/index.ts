@@ -21,4 +21,4 @@ Promise.resolve()
         await updateMasterMission(c, region, path);
         return mstUpdate(c, path, region, schemaChanges);
     })
-    // .then(d => dump(d, path, region))
+    .then(d => dump(d, path, region))
