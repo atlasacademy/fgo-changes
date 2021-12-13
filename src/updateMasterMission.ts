@@ -220,9 +220,7 @@ export async function updateMasterMission (m : Map<string, any[]>, region : stri
                         .setTitle(`Master missions`)
                         .addFields([{
                             name: `Time`,
-                            value: '```FROM | ' + `${new Date(changes[0].startedAt * 1000).toUTCString()}`
-                                    + '\n TO  | ' + `${new Date(changes[0].endedAt * 1000).toUTCString()}`
-                                    + '```'
+                            value: `From <t:${changes[0].startedAt}> to <t:${changes[0].endedAt}>`
                         }, {
                             name: `Missions`,
                             value: descriptions
