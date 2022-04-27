@@ -172,15 +172,19 @@ export async function mstUpdate(m : Map<string, any[]>, dir : string, region: st
 
         const payloadLimit = 2048;
         const sendPayload = async () => {
-            await client.send('', {
-                username: `FGO Changelog | ${region}`,
-                avatarURL: 'https://apps.atlasacademy.io/db/logo192.png',
-                embeds: [
-                    new MessageEmbed()
-                        .setTitle(name)
-                        .setDescription(payloadChunk.join(', ')),
-                ]
-            });
+            try {
+                await client.send('', {
+                    username: `FGO Changelog | ${region}`,
+                    avatarURL: 'https://apps.atlasacademy.io/db/logo192.png',
+                    embeds: [
+                        new MessageEmbed()
+                            .setTitle(name)
+                            .setDescription(payloadChunk.join(', ')),
+                    ]
+                });
+            } catch (e) {
+                console.error(e);
+            }
 
             payloadChunk = [];
             payloadSize = 0;
@@ -224,7 +228,7 @@ export async function mstUpdate(m : Map<string, any[]>, dir : string, region: st
             ]
         })
 
-    await client.destroy();
+    client.destroy();
     console.log(`Done.`)
     return dump;
 }

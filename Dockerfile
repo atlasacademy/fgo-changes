@@ -1,5 +1,5 @@
-FROM node:14.5
-MAINTAINER sadisticsolutione@gmail.com
+FROM node:16
+LABEL MAINTAINER sadisticsolutione@gmail.com
 
 ENV REPO="" \
     TOKEN="" \

@@ -59,11 +59,10 @@ export async function updateMasterMission (m : Map<string, any[]>, region : stri
 
         process.stdout.write(`New master mission found. Dispatching updates... `);
         let [token, id] = process.env.WEBHOOK.split('/').reverse()
-        let client = new WebhookClient(id, token);
 
         const condDetails = Array.from(
             missionConditions.values()
-        ).sort((a, b) => a.missionId - b.missionId).map(a => `- ${a.conditionMessage}`).join('\n');
+        ).sort((a, b) => a.missionId - b.missionId).map(a => `- ${a.conditionMessage}`);
 
         const condDescriptions = changes
             .sort((a, b) => a.id - b.id)
@@ -209,30 +208,52 @@ export async function updateMasterMission (m : Map<string, any[]>, region : stri
                     default: console.log(mstEventMissionCondition);
                 }
                 return `\`${a.id}\` | ${detail}`;
-            }).join('\n');
+            });
 
-        const masterMissionMessage = (descriptions: string) => {
-            return {
-                username: `FGO Changelog | ${region}`,
-                avatarURL: 'https://apps.atlasacademy.io/db/logo192.png',
-                embeds: [
-                    new MessageEmbed()
-                        .setTitle(`Master missions`)
-                        .addFields([{
-                            name: `Time`,
-                            value: `From <t:${changes[0].startedAt}> to <t:${changes[0].endedAt}>`
-                        }, {
-                            name: `Missions`,
-                            value: descriptions
-                        }])
-                ]
+        let client = new WebhookClient(id, token);
+
+        const sendMasterMissionMessage = async (descriptions: string[]) => {
+            const DISCORD_EMBED_FIELD_VALUE_MAX_LENGTH = 1024;
+            const chunkedDescriptions: string[] = [];
+            let descriptionChunk = '';
+            for (const discription of descriptions) {
+                if (descriptionChunk.length + discription.length + 1 > DISCORD_EMBED_FIELD_VALUE_MAX_LENGTH) {
+                    chunkedDescriptions.push(descriptionChunk);
+                    descriptionChunk = '';
+                }
+                descriptionChunk += discription + '\n';
+            }
+
+            for (const descriptionChunk of chunkedDescriptions) {
+                const message = {
+                    username: `FGO Changelog | ${region}`,
+                    avatarURL: 'https://apps.atlasacademy.io/db/logo192.png',
+                    embeds: [
+                        new MessageEmbed()
+                            .setTitle(`Master missions`)
+                            .addFields([{
+                                name: `Time`,
+                                value: `From <t:${changes[0].startedAt}> to <t:${changes[0].endedAt}>`
+                            }, {
+                                name: `Missions`,
+                                value: descriptionChunk
+                            }])
+                    ]
+                }
+
+                await client.send('', message);
             }
         }
 
-        await client.send('', masterMissionMessage(condDetails));
-        await client.send('', masterMissionMessage(condDescriptions));
 
-        console.log(`Done.`);
+        try {
+            await sendMasterMissionMessage(condDetails);
+            await sendMasterMissionMessage(condDescriptions);
+        } catch (e) {
+            console.error(e);
+        }
+
         client.destroy();
+        console.log(`Done.`);
     }
 }
