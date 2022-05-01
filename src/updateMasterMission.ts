@@ -223,6 +223,7 @@ export async function updateMasterMission (m : Map<string, any[]>, region : stri
                 }
                 descriptionChunk += discription + '\n';
             }
+            if (descriptionChunk !== '') chunkedDescriptions.push(descriptionChunk);
 
             for (const descriptionChunk of chunkedDescriptions) {
                 const message = {
