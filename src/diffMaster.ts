@@ -2,12 +2,15 @@ import git from 'isomorphic-git'
 import * as fs from 'fs';
 import hash from 'object-hash';
 
+const BIG_FILES_SKIP = ["mstSvtVoice", "mstAi", "mstQuest", "mstShop"].map(fileName => `master/${fileName}.json`);
+
 export async function diffMaster(dir : string, changes : Map<string, [string, string]>) {
     // filename => changed/added obj
     let out = new Map<string, any[]>();
     let schemaChanges = [] as string[];
     console.log(`Calculating master data difference...`);
     for (let filename of [...changes.keys()]) {
+        if (BIG_FILES_SKIP.includes(filename)) continue;
         if (!filename.startsWith('master')) continue;
         let [newId, oldId] = changes.get(filename);
         let { blob: oldB } = await git.readBlob({ fs, dir, oid: oldId }),
