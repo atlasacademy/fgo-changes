@@ -1,16 +1,18 @@
-import git from 'isomorphic-git';
-import http from 'isomorphic-git/http/node';
+import { execFileSync } from 'child_process';
 
 export async function prepareRepository(url : string, region : string, dir : string) {
-    await git.clone({
-        dir,
+    execFileSync('git', [
+        '-c', `credential.username=${process.env.TOKEN}`,
+
+        'clone',
+
+        '-b', region,
         url,
-        onAuth: () => ({ username: process.env.TOKEN, password: "" }),
-        singleBranch: true,
-        ref: region,
-        fs: require('fs'),
-        depth: 2,
-        http
-    });
+
+        dir,
+        '--depth', '2',
+
+        '--single-branch'
+    ])
     console.log(`Cloned repository to ${dir}.`)
 }
