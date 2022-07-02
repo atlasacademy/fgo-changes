@@ -13,6 +13,11 @@ export async function prepareRepository(url : string, region : string, dir : str
         '--depth', '2',
 
         '--single-branch'
-    ])
+    ], {
+        env: {
+            ...process.env,
+            'GIT_ASKPASS': 'echo'
+        }
+    })
     console.log(`Cloned repository to ${dir}.`)
 }
