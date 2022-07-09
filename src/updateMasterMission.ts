@@ -21,7 +21,10 @@ function andConcat(strings : string[]) {
 
 export async function updateMasterMission (m : Map<string, any[]>, region : string, path : string) {
     // check for new master mission
-    let changes = m.get(`master/mstEventMission.json`)?.filter(a => a.type === 2);
+    let changes = m.get(`master/mstEventMission.json`)
+        ?.filter(a => a.type === 2)
+        // filter expired missions
+        .filter(a => a.endedAt >= (+new Date() / 1000));
 
     if (changes?.length) {
         let items = new Map<number, string>();
