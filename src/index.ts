@@ -20,7 +20,7 @@ Promise.resolve()
     .then(async _ => {
         let [c, schemaChanges] = _;
         await updateMasterMission(c, region, path);
-        const masterChanges = mstUpdate(c, path, region, schemaChanges);
+        const masterChanges = await mstUpdate(c, path, region, schemaChanges);
         await updateAsset(c, region);
         return masterChanges;
     })
