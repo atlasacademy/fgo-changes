@@ -7,6 +7,7 @@ import { mstUpdate } from './updateMaster';
 import { dump } from './dump';
 import rimraf from 'rimraf';
 import { updateMasterMission } from './updateMasterMission';
+import { updateAsset } from './updateAsset';
 
 const region = process.argv[2] || process.env.REGION
 const path = join(__dirname, '..', `work`, `fgo-game-data-${region}`);
@@ -19,6 +20,8 @@ Promise.resolve()
     .then(async _ => {
         let [c, schemaChanges] = _;
         await updateMasterMission(c, region, path);
-        return mstUpdate(c, path, region, schemaChanges);
+        const masterChanges = mstUpdate(c, path, region, schemaChanges);
+        await updateAsset(c, region);
+        return masterChanges;
     })
     .then(d => dump(d, path, region))

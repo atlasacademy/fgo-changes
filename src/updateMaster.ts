@@ -1,6 +1,7 @@
 import { WebhookClient, MessageEmbed } from 'discord.js';
 import * as fs from 'fs';
 import { join } from 'path';
+import { DB_HOST, DISCORD_AVATAR } from './config';
 
 export async function mstUpdate(m : Map<string, any[]>, dir : string, region: string, ignoredFiles : string[] = []) {
     let payloads : { name: string, payload: string[] }[] = [];
@@ -58,16 +59,16 @@ export async function mstUpdate(m : Map<string, any[]>, dir : string, region: st
                 let [type, collectionNo] = lookup.get(a);
                 // if CE collectionNo != 0 (normal ones)
                 if (collectionNo)
-                    return `[${collectionNo}](https://apps.atlasacademy.io/db/${region}/craft-essence/${collectionNo})`;
-                return `[[ID : ${a}]](https://apps.atlasacademy.io/db/${region}/enemy/${a})`
+                    return `[${collectionNo}](${DB_HOST}/${region}/craft-essence/${collectionNo})`;
+                return `[[ID : ${a}]](${DB_HOST}/${region}/enemy/${a})`
             });
         let pSV = SVs
             .sort((a, b) => a - b)
             .map(a => {
                 let [type, collectionNo] = lookup.get(a)
                 if (collectionNo)
-                    return `[${collectionNo}](https://apps.atlasacademy.io/db/${region}/servant/${collectionNo})`;
-                return `[[ID : ${a}]](https://apps.atlasacademy.io/db/${region}/enemy/${a})`
+                    return `[${collectionNo}](${DB_HOST}/${region}/servant/${collectionNo})`;
+                return `[[ID : ${a}]](${DB_HOST}/${region}/enemy/${a})`
             });
         payloads.push({ name: `Servant changes`, payload: pSV });
         payloads.push({ name: `Craft Essence changes`, payload: pCE });
@@ -98,7 +99,7 @@ export async function mstUpdate(m : Map<string, any[]>, dir : string, region: st
             .forEach(file => m.get(file)?.forEach(a => changed.add(+a.id)));
         let payload = [...changed]
             .sort((a, b) => a - b)
-            .map(a => `[${a}](https://apps.atlasacademy.io/db/${region}/skill/${a})`);
+            .map(a => `[${a}](${DB_HOST}/${region}/skill/${a})`);
         payloads.push({ name: `Skill changes`, payload });
         [...changed].forEach(skillId => {
             if (lookup.has(skillId))
@@ -118,7 +119,7 @@ export async function mstUpdate(m : Map<string, any[]>, dir : string, region: st
             .forEach(file => m.get(file)?.forEach(a => changed.add(+a.treaureDeviceId)));
         let payload = [...changed]
             .sort((a, b) => a - b)
-            .map(id => `[${id}](https://apps.atlasacademy.io/db/${region}/noble-phantasm/${id})`)
+            .map(id => `[${id}](${DB_HOST}/${region}/noble-phantasm/${id})`)
         payloads.push({ name: `Noble Phantasm changes`, payload });
         [...changed].forEach(npId => {
             if (lookup.has(npId))
@@ -135,7 +136,7 @@ export async function mstUpdate(m : Map<string, any[]>, dir : string, region: st
         m.get(`master/mstBuff.json`)?.forEach(a => changed.add(+a.id));
         let payload = [...changed]
             .sort((a, b) => a - b)
-            .map(id => `[${id}](https://apps.atlasacademy.io/db/${region}/buff/${id})`)
+            .map(id => `[${id}](${DB_HOST}/${region}/buff/${id})`)
         payloads.push({ name: `Buff changes`, payload });
         [...changed].forEach(bId => {
             if (lookup.has(bId))
@@ -153,7 +154,7 @@ export async function mstUpdate(m : Map<string, any[]>, dir : string, region: st
         m.get(`master/mstFuncGroup.json`)?.forEach(a => changed.add(+a.funcId));
         let payload = [...changed]
             .sort((a, b) => a - b)
-            .map(id => `[${id}](https://apps.atlasacademy.io/db/${region}/func/${id})`)
+            .map(id => `[${id}](${DB_HOST}/${region}/func/${id})`)
         payloads.push({ name: `Function changes`, payload });
         [...changed].forEach(fId => {
             if (lookup.has(fId))
@@ -175,7 +176,7 @@ export async function mstUpdate(m : Map<string, any[]>, dir : string, region: st
             try {
                 await client.send('', {
                     username: `FGO Changelog | ${region}`,
-                    avatarURL: 'https://apps.atlasacademy.io/db/logo192.png',
+                    avatarURL: DISCORD_AVATAR,
                     embeds: [
                         new MessageEmbed()
                             .setTitle(name)
@@ -209,7 +210,7 @@ export async function mstUpdate(m : Map<string, any[]>, dir : string, region: st
     if (ignoredFiles.length)
         await client.send('', {
             username: `FGO Changelog | ${region}`,
-            avatarURL: 'https://apps.atlasacademy.io/db/logo192.png',
+            avatarURL: DISCORD_AVATAR,
             embeds: [
                 new MessageEmbed()
                     .setTitle('Potential schema changes')

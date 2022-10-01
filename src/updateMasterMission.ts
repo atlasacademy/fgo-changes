@@ -3,6 +3,7 @@ import { join } from 'path';
 import { CondType, Mission } from '@atlasacademy/api-connector';
 import { toTitleCase } from '@atlasacademy/api-descriptor';
 import axios from 'axios';
+import { DISCORD_AVATAR } from './config';
 
 let { DetailCondType } = Mission;
 let condTypes = Object.keys(CondType).filter(key => isNaN(+key)) as (keyof typeof CondType)[];
@@ -231,7 +232,7 @@ export async function updateMasterMission (m : Map<string, any[]>, region : stri
             for (const descriptionChunk of chunkedDescriptions) {
                 const message = {
                     username: `FGO Changelog | ${region}`,
-                    avatarURL: 'https://apps.atlasacademy.io/db/logo192.png',
+                    avatarURL: DISCORD_AVATAR,
                     embeds: [
                         new MessageEmbed()
                             .setTitle(`Master missions`)

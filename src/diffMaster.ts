@@ -4,6 +4,15 @@ import hash from 'object-hash';
 
 const BIG_FILES_SKIP = ["mstSvtVoice", "mstAi", "mstQuest", "mstShop"].map(fileName => `master/${fileName}.json`);
 
+const TEXT_FILES = ["AssetStorage.txt", "ScriptActionEncrypt/ScriptFileList/ScriptFileList.txt"];
+
+const diffLine = (oldString: string, newString: string) => {
+    const oldLines = new Set(oldString.split("\n")),
+        newLines = newString.split("\n");
+
+    return newLines.filter(line => !oldLines.has(line));
+}
+
 export async function diffMaster(dir : string, changes : Map<string, [string, string]>) {
     // filename => changed/added obj
     let out = new Map<string, any[]>();
@@ -11,12 +20,21 @@ export async function diffMaster(dir : string, changes : Map<string, [string, st
     console.log(`Calculating master data difference...`);
     for (let filename of [...changes.keys()]) {
         if (BIG_FILES_SKIP.includes(filename)) continue;
-        if (!filename.startsWith('master')) continue;
+        if (!TEXT_FILES.includes(filename) && !filename.startsWith('master')) continue;
         let [newId, oldId] = changes.get(filename);
         let { blob: oldB } = await git.readBlob({ fs, dir, oid: oldId }),
             { blob: newB } = await git.readBlob({ fs, dir, oid: newId });
-        let _old = JSON.parse(Buffer.from(oldB).toString('utf-8')) as any[],
-            _new = JSON.parse(Buffer.from(newB).toString('utf-8')) as any[];
+
+        const oldString = Buffer.from(oldB).toString('utf-8'),
+            newString = Buffer.from(newB).toString('utf-8');
+
+        if (TEXT_FILES.includes(filename)) {
+            out.set(filename, diffLine(oldString, newString));
+            continue;
+        }
+
+        let _old = JSON.parse(oldString) as any[],
+            _new = JSON.parse(newString) as any[];
 
         let hashes = new Map<string, any>();
         let h = (_ : any) => { let __ = hash(_); hashes.set(__, _); return __ };
