@@ -8,6 +8,7 @@ import { MessageEmbed, WebhookClient } from "discord.js";
 
 interface AssetDetail {
     changeList: string[];
+    filter?: (itemPath: string) => boolean;
     getName?: (itemId: string) => string;
     getLocation: (itemId: string) => string;
 }
@@ -21,6 +22,17 @@ export const updateAsset = async (
     const uRegion = region.toUpperCase(),
         changes: Map<string, AssetDetail> = new Map([
             [
+                "CharaFigure",
+                {
+                    changeList: [],
+                    filter: (path) =>
+                        path.startsWith("CharaFigure/") &&
+                        path.split("/").length === 2,
+                    getLocation: (itemId) =>
+                        `${ASSET_HOST}/${uRegion}/CharaFigure/${itemId}/${itemId}_merged.png`,
+                },
+            ],
+            [
                 "CharaFigure/Form",
                 {
                     changeList: [],
@@ -32,14 +44,6 @@ export const updateAsset = async (
                         const [formId, charafigureId] = itemId.split("/");
                         return `${ASSET_HOST}/${uRegion}/CharaFigure/Form/${formId}/${charafigureId}/${charafigureId}_merged.png`;
                     },
-                },
-            ],
-            [
-                "CharaFigure",
-                {
-                    changeList: [],
-                    getLocation: (itemId) =>
-                        `${ASSET_HOST}/${uRegion}/CharaFigure/${itemId}/${itemId}_merged.png`,
                 },
             ],
             [
@@ -87,6 +91,9 @@ export const updateAsset = async (
                 "Servants",
                 {
                     changeList: [],
+                    filter: (path) =>
+                        path.startsWith("Servants/") &&
+                        path.split("/").length === 2,
                     getLocation: (itemId) =>
                         `${MODEL_VIEWER_HOST}/?id=${itemId}`,
                 },
@@ -100,11 +107,15 @@ export const updateAsset = async (
                 const [first, assetType, size, crc32, name, decryptKey] =
                     line.split(",");
 
-                for (const assetType of changes.keys()) {
-                    if (name.startsWith(`${assetType}/`)) {
-                        changes
-                            .get(assetType)
-                            .changeList.push(name.slice(assetType.length + 1));
+                for (const [assetType, assetChange] of changes.entries()) {
+                    if (
+                        assetChange.filter !== undefined
+                            ? assetChange.filter(name)
+                            : name.startsWith(`${assetType}/`)
+                    ) {
+                        assetChange.changeList.push(
+                            name.slice(assetType.length + 1)
+                        );
                     }
                 }
             }
