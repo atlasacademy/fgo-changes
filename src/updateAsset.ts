@@ -8,7 +8,7 @@ import { MessageEmbed, WebhookClient } from "discord.js";
 
 interface AssetDetail {
     changeList: string[];
-    getName: (itemId: string) => string;
+    getName?: (itemId: string) => string;
     getLocation: (itemId: string) => string;
 }
 
@@ -21,10 +21,23 @@ export const updateAsset = async (
     const uRegion = region.toUpperCase(),
         changes: Map<string, AssetDetail> = new Map([
             [
+                "CharaFigure/Form",
+                {
+                    changeList: [],
+                    getName: (itemId) => {
+                        const [formId, charafigureId] = itemId.split("/");
+                        return `${charafigureId}-${formId}`;
+                    },
+                    getLocation: (itemId) => {
+                        const [formId, charafigureId] = itemId.split("/");
+                        return `${ASSET_HOST}/${uRegion}/CharaFigure/Form/${formId}/${charafigureId}/${charafigureId}_merged.png`;
+                    },
+                },
+            ],
+            [
                 "CharaFigure",
                 {
                     changeList: [],
-                    getName: (itemId) => itemId,
                     getLocation: (itemId) =>
                         `${ASSET_HOST}/${uRegion}/CharaFigure/${itemId}/${itemId}_merged.png`,
                 },
@@ -42,7 +55,6 @@ export const updateAsset = async (
                 "Image",
                 {
                     changeList: [],
-                    getName: (itemId) => itemId,
                     getLocation: (itemId) =>
                         `${ASSET_HOST}/${uRegion}/Image/${itemId}/${itemId}.png`,
                 },
@@ -75,7 +87,6 @@ export const updateAsset = async (
                 "Servants",
                 {
                     changeList: [],
-                    getName: (itemId) => itemId,
                     getLocation: (itemId) =>
                         `${MODEL_VIEWER_HOST}/?id=${itemId}`,
                 },
@@ -93,7 +104,7 @@ export const updateAsset = async (
                     if (name.startsWith(`${assetType}/`)) {
                         changes
                             .get(assetType)
-                            .changeList.push(name.split("/")[1]);
+                            .changeList.push(name.slice(assetType.length + 1));
                     }
                 }
             }
@@ -139,9 +150,11 @@ export const updateAsset = async (
         };
 
         for (const itemId of changeDetail.changeList) {
-            const itemLink = `[${changeDetail.getName(
-                itemId
-            )}](${changeDetail.getLocation(itemId)})`;
+            const itemLink = `[${
+                changeDetail.getName !== undefined
+                    ? changeDetail.getName(itemId)
+                    : itemId
+            }](${changeDetail.getLocation(itemId)})`;
 
             if (payloadSize + itemLink.length + 2 > payloadLimit) {
                 await sendPayload();
