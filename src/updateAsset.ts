@@ -92,6 +92,7 @@ export const updateAsset = async (
                 {
                     changeList: [],
                     filter: (path) =>
+                        uRegion === "JP" &&
                         path.startsWith("Servants/") &&
                         path.split("/").length === 2,
                     getLocation: (itemId) =>
