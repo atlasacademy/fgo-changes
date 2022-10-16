@@ -1,10 +1,13 @@
 import git from 'isomorphic-git'
 import * as fs from 'fs';
 import hash from 'object-hash';
+import { ASSET_STORAGE, SCRIPT_FILE_LIST, ASSET_BUNDLE_KEY, SCRIPT_ENCRYPT_SETTING } from './config';
+import path from 'path';
 
 const BIG_FILES_SKIP = ["mstSvtVoice", "mstAi", "mstQuest", "mstShop"].map(fileName => `master/${fileName}.json`);
 
-const TEXT_FILES = ["AssetStorage.txt", "ScriptActionEncrypt/ScriptFileList/ScriptFileList.txt"];
+const TEXT_FILES = [ASSET_STORAGE, SCRIPT_FILE_LIST];
+const SPECIAL_FILES = [ASSET_STORAGE, SCRIPT_FILE_LIST, SCRIPT_ENCRYPT_SETTING, ASSET_BUNDLE_KEY];
 
 const diffLine = (oldString: string, newString: string) => {
     const oldLines = new Set(oldString.split("\n")),
@@ -17,10 +20,21 @@ export async function diffMaster(dir : string, changes : Map<string, [string, st
     // filename => changed/added obj
     let out = new Map<string, any[]>();
     let schemaChanges = [] as string[];
+    const currentFiles = new Map<string, any[]>();
+
+    for (const filename of SPECIAL_FILES) {
+        const fileContent = fs.readFileSync(path.join(dir, filename)).toString('utf-8');
+        if (TEXT_FILES.includes(filename)) {
+            currentFiles.set(filename, fileContent.split("\n"));
+        } else {
+            currentFiles.set(filename, JSON.parse(fileContent) as any[]);
+        }
+    }
+
     console.log(`Calculating master data difference...`);
     for (let filename of [...changes.keys()]) {
         if (BIG_FILES_SKIP.includes(filename)) continue;
-        if (!TEXT_FILES.includes(filename) && !filename.startsWith('master')) continue;
+        if (!SPECIAL_FILES.includes(filename) && !filename.startsWith('master')) continue;
         let [newId, oldId] = changes.get(filename);
         let { blob: oldB } = await git.readBlob({ fs, dir, oid: oldId }),
             { blob: newB } = await git.readBlob({ fs, dir, oid: newId });
@@ -57,5 +71,5 @@ export async function diffMaster(dir : string, changes : Map<string, [string, st
         else out.set(filename, changed.map(s => hashes.get(s)));
     }
 
-    return <const>[out, schemaChanges];
+    return <const>[out, schemaChanges, currentFiles];
 }

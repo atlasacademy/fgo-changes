@@ -18,10 +18,10 @@ Promise.resolve()
     .then(() => diff(path))
     .then(diff => diffMaster(path, diff))
     .then(async _ => {
-        let [c, schemaChanges] = _;
+        const [c, schemaChanges, currentFiles] = _;
         await updateMasterMission(c, region, path);
         const masterChanges = await mstUpdate(c, path, region, schemaChanges);
-        await updateAsset(c, region);
+        await updateAsset(c, currentFiles, region);
         return masterChanges;
     })
     .then(d => dump(d, path, region))
