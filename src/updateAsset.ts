@@ -158,7 +158,7 @@ export const updateAsset = async (
     const scriptListChanges: string[] = allChanges.get(SCRIPT_FILE_LIST);
     const scriptChangeList = changes.get("Script").changeList;
     if (scriptListChanges !== undefined) {
-        for (const script in scriptListChanges) {
+        for (const script of scriptListChanges) {
             if (canBeDecrypted(scriptKeyMap.get(script.replace(".txt", "")))) {
                 scriptChangeList.add(script);
             }
