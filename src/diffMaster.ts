@@ -23,16 +23,19 @@ export async function diffMaster(dir : string, changes : Map<string, [string, st
     const currentFiles = new Map<string, any[]>();
 
     for (const filename of SPECIAL_FILES) {
-        const fileContent = fs.readFileSync(path.join(dir, filename)).toString('utf-8');
-        if (TEXT_FILES.includes(filename)) {
-            currentFiles.set(filename, fileContent.split("\n"));
-        } else {
-            currentFiles.set(filename, JSON.parse(fileContent) as any[]);
+        if (fs.existsSync(filename)){
+            const fileContent = fs.readFileSync(path.join(dir, filename)).toString('utf-8');
+            if (TEXT_FILES.includes(filename)) {
+                currentFiles.set(filename, fileContent.split("\n"));
+            } else {
+                currentFiles.set(filename, JSON.parse(fileContent) as any[]);
+            }
         }
     }
 
     console.log(`Calculating master data difference...`);
     for (let filename of [...changes.keys()]) {
+        if (!fs.existsSync(filename)) continue;
         if (BIG_FILES_SKIP.includes(filename)) continue;
         if (!SPECIAL_FILES.includes(filename) && !filename.startsWith('master')) continue;
         let [newId, oldId] = changes.get(filename);
