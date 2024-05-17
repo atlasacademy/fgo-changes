@@ -166,6 +166,8 @@ export async function mstUpdate(m : Map<string, any[]>, dir : string, region: st
 
     let [token, id] = process.env.WEBHOOK.split('/').reverse()
     let client = new WebhookClient(id, token);
+    const messageCountLimit = 3;
+    let currentMessageCount = 0;
     for (let p of payloads) {
         let { name, payload } = p,
             payloadChunk: string[] = [],
@@ -191,10 +193,11 @@ export async function mstUpdate(m : Map<string, any[]>, dir : string, region: st
             payloadSize = 0;
 
             await new Promise(resolve => setTimeout(resolve, 1000));
+            currentMessageCount += 1;
         };
 
         for (let line of payload) {
-            if (payloadSize + line.length + 2 > payloadLimit) {
+            if (payloadSize + line.length + 2 > payloadLimit && currentMessageCount <= messageCountLimit) {
                 await sendPayload();
             }
 
