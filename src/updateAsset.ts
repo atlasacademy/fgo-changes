@@ -7,6 +7,7 @@ import {
     MODEL_VIEWER_HOST,
     SCRIPT_ENCRYPT_SETTING,
     SCRIPT_FILE_LIST,
+    messageCountLimit,
 } from "./config";
 import { MessageEmbed, WebhookClient } from "discord.js";
 
@@ -206,6 +207,8 @@ export const updateAsset = async (
     for (const [assetType, changeDetail] of changes.entries()) {
         if (changeDetail.changeList.size === 0) continue;
 
+        let currentMessageCount = 0;
+
         let payloadChunk: string[] = [],
             payloadSize = 0;
 
@@ -229,6 +232,7 @@ export const updateAsset = async (
             payloadSize = 0;
 
             await new Promise((resolve) => setTimeout(resolve, 1000));
+            currentMessageCount += 1;
         };
 
         for (const itemId of changeDetail.changeList) {
@@ -238,7 +242,7 @@ export const updateAsset = async (
                     : itemId
             }](${changeDetail.getLocation(itemId)})`;
 
-            if (payloadSize + itemLink.length + 2 > payloadLimit) {
+            if (payloadSize + itemLink.length + 2 > payloadLimit && currentMessageCount <= messageCountLimit) {
                 await sendPayload();
             }
 
@@ -246,7 +250,7 @@ export const updateAsset = async (
             payloadSize += itemLink.length + 2;
         }
 
-        if (payloadChunk.length > 0) {
+        if (payloadChunk.length > 0 && currentMessageCount <= messageCountLimit) {
             await sendPayload();
         }
     }

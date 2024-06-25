@@ -1,7 +1,7 @@
 import { WebhookClient, MessageEmbed } from 'discord.js';
 import * as fs from 'fs';
 import { join } from 'path';
-import { DB_HOST, DISCORD_AVATAR } from './config';
+import { DB_HOST, DISCORD_AVATAR, messageCountLimit } from './config';
 
 export async function mstUpdate(m : Map<string, any[]>, dir : string, region: string, ignoredFiles : string[] = []) {
     let payloads : { name: string, payload: string[] }[] = [];
@@ -166,7 +166,7 @@ export async function mstUpdate(m : Map<string, any[]>, dir : string, region: st
 
     let [token, id] = process.env.WEBHOOK.split('/').reverse()
     let client = new WebhookClient(id, token);
-    const messageCountLimit = 3;
+
     let currentMessageCount = 0;
     for (let p of payloads) {
         let { name, payload } = p,
@@ -205,7 +205,7 @@ export async function mstUpdate(m : Map<string, any[]>, dir : string, region: st
             payloadSize += line.length + 2;
         }
 
-        if (payloadChunk.length > 0) {
+        if (payloadChunk.length > 0 && currentMessageCount <= messageCountLimit) {
             await sendPayload();
         }
     }
