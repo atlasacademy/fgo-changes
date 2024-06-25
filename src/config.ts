@@ -9,3 +9,5 @@ export const SCRIPT_FILE_LIST =
 export const SCRIPT_ENCRYPT_SETTING =
     "ScriptActionEncrypt/ScriptFileList/ScriptEncryptSetting.json";
 export const ASSET_BUNDLE_KEY = "metadata/assetbundleKey.json";
+
+export const messageCountLimit = 3;
